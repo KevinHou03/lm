@@ -1,0 +1,2 @@
+datasets/FashionMNIST/raw/*.csv
+datasets/FashionMNIST/raw/*.ubyte
