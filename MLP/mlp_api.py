@@ -43,3 +43,4 @@ if __name__ == "__main__":
 #         nn.init.xavier_uniform_(m.weight)
 
 '''
+# 尝试做一些kaggle项目
