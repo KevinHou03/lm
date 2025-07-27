@@ -57,7 +57,7 @@ def train_no_api(lambd):
                 l = loss(net(X), y) + lambd * L2_penalty(w)
             l.sum().backward()
             sgd([w, b], lr, batch_size)
-            # optimizer = torch.optim.SGD([w, b], lr=0.003, weight_decay=lambd)
+            # optimizer = torch.optim.SGD([w, b], lr=0.003, Weight_decay=lambd)
     print("w' s L2 is ", torch.norm(w).item())
 
 def train_api(wd):
@@ -67,7 +67,7 @@ def train_api(wd):
         param.data.normal_() # 将所有参数（权重、偏置）用标准正态分布（均值0，方差1）初始化
     loss = nn.MSELoss()
     #  对权重使用 L2 正则, 对b则不使用
-    updater = torch.optim.SGD([{'params': net[0].weight, 'weight_decay': wd}, {'params': net[0].bias}], lr=lr, momentum=0.9)
+    updater = torch.optim.SGD([{'params': net[0].weight, 'Weight_decay': wd}, {'params': net[0].bias}], lr=lr, momentum=0.9)
 
     for epoch in range(num_epoch):
         for X, y in train_iter:
