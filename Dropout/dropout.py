@@ -14,7 +14,7 @@ def dropout_layer(X, dropout_rate):
 
 # test
 X = torch.arange(16, dtype = torch.float32).reshape((2, 8))
-print(X)
-print(dropout_layer(X, 0.5))
-print(dropout_layer(X, 0.0))
-print(dropout_layer(X, 1.0))
+# print(X)
+# print(dropout_layer(X, 0.5))
+# print(dropout_layer(X, 0.0))
+# print(dropout_layer(X, 1.0))

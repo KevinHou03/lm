@@ -116,6 +116,8 @@ def train_ch3(net, train_iter, test_iter, loss, num_epochs, updater):
         test_acc = evaluate_accuracy(net, test_iter)
 
     train_loss, train_acc = train_metrics
+    print("train loss:", train_loss)
+    print("train_acc:", train_acc)
     return train_loss, train_acc
 
 if __name__ == "__main__":
