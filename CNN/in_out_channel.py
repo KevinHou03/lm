@@ -47,4 +47,24 @@ print(corr2d_multi_in_out(X, K))
 
 
 # 1 x 1 卷积
+'''
+因为 1×1 卷积只在通道维度上线性组合，不涉及空间维度的滑动窗口，
+可以直接将 (C_in, H, W) 拉平成 (C_in, H*W)，用一个 (C_out, C_in) 的权重矩阵做一次批量线性变换，
+再 reshape 回 (C_out, H, W)。
+'''
 def corr2d_multi_in_out_1x1(X, K):
+    in_channel, h, w = X.shape # 从输入 X 里解包出通道数、高度、宽度
+    print(in_channel, h, w)
+    out_channel = K.shape[0]
+    X = X.reshape((in_channel, h * w))
+    K = K.reshape((out_channel, in_channel))
+    Y = torch.matmul(K, X)
+    return Y.reshape((out_channel, h, w))
+
+X = torch.normal(0, 1, (3, 3, 3)) # X形状是C_in, H, W
+K = torch.normal(0, 1, (2, 3, 1, 1)) # C_out, C_in, H, W
+
+Y1 = corr2d_multi_in_out_1x1(X, K)
+Y2 = corr2d_multi_in_out(X, K)
+
+assert float(torch.abs(Y1 - Y2).sum()) < 1e-6
