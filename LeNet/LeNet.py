@@ -1,8 +1,8 @@
 import torch
 from torch import nn
-from LM.Softmax.Accumulator import Accumulator
-from LM.Softmax.MNIST_DS import load_data_fashion_mnist
-from LM.Softmax.softmax_scratch import accuracy
+from LM.utils import Accumulator
+from LM.utils import load_data_fashion_mnist
+from LM.utils import accuracy
 
 class Reshape(torch.nn.Module):
     def forward(self, x):
