@@ -3,6 +3,7 @@ import torch
 import torchvision
 from torchvision.transforms import transforms
 from torch.utils import data
+from torch import nn
 
 
 
@@ -58,3 +59,26 @@ def load_data_fashion_mnist(batch_size, resize = None):
 
 def get_dataloader_worker():
     return 4
+
+
+def evaluate_accracy_gpu(net, data_iter, device=None):
+    """使用GPU计算模型在数据集上的精度"""
+    if isinstance(net, nn.Module):
+        net.eval()
+        if device is None:
+            device = next(net.parameters()).device
+
+    metric = Accumulator(2)  # 正确数, 总数
+    with torch.no_grad():
+        for X, y in data_iter:
+            if isinstance(X, (list, tuple)):     # 只有多输入才按元素搬设备
+                X = [x.to(device) for x in X]
+                y_hat = net(*X)
+            else:                                 # 常见：单输入张量
+                X = X.to(device)
+                y_hat = net(X)
+            y = y.to(device)
+            metric.add(accuracy(y_hat, y), y.numel())
+
+    net.train()  # 可选：恢复训练模式
+    return metric[0] / metric[1]

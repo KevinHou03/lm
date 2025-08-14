@@ -1,51 +1,33 @@
-# use vgg block
+# NiN 的目标是：让“卷积核本身更像一个小网络”，从而提升特征表达力；并用 全局平均池化（GAP） 取代大而易过拟合的全连接层（FC）。
+
 import torch
 from torch import nn
 
-from LM.ch06.AlexNet.AlexNet import train_ch6
 from LM.ch06.LeNet.LeNet import evaluate_accracy_gpu
-from LM.utils import load_data_fashion_mnist, accuracy, Accumulator
+from LM.utils import Accumulator, accuracy, load_data_fashion_mnist
 
 
-def vgg_block(num_conv, in_channel, out_channel):
-    layers = []
-    for _ in range(num_conv):
-        layers.append(nn.Conv2d(in_channels=in_channel,
-                                out_channels=out_channel,
-                                kernel_size=3,
-                                padding=1))
-        layers.append(nn.ReLU())
-        in_channel = out_channel # 这样才能连起来
-    layers.append(nn.MaxPool2d(kernel_size = 2, stride = 2))
-    return nn.Sequential(*layers) # 解包变量
-
-
-# 每个元组(num_conv, out_channel)表示一个卷积块的配置
-conv_arch = ((1, 64), (1, 128), (2, 256), (2, 512), (2, 512))
-
-def vgg(conv_arch):
-    conv_blks = []
-    in_channel = 1 # initial in_channel
-    for (num_conv, out_channel) in conv_arch: # 循环构建卷积块
-        conv_blks.append(vgg_block(num_conv, in_channel, out_channel))
-        in_channel = out_channel
-
+def nin_block(in_channel, out_channel, kernel_size, strides, paddings):
     return nn.Sequential(
-        *conv_blks, nn.Flatten(), # 拉平成 batch_size,out_channel×7×7
-        nn.Linear(out_channel * 7 * 7, 4096), # 7×7 是卷积和池化后剩下的空间尺寸，这里是 VGG 的特征图大小
+        nn.Conv2d(in_channel, out_channel, kernel_size, stride=strides, padding=paddings),
         nn.ReLU(),
-        nn.Dropout(0.5),
-        nn.Linear(4096, 4096),
+        nn.Conv2d(out_channel, out_channel, kernel_size=1), # 1x1 conv
         nn.ReLU(),
-        nn.Dropout(0.5),
-        nn.Linear(4096, 10)
+        nn.Conv2d(out_channel, out_channel, kernel_size=1), # 1x1 conv不会改变输出通道大小
+        nn.ReLU(),
     )
 
-# net = vgg(conv_arch) # 结构为[多个Conv Block提取特征] +  [FC全连接层做分类]
-
-ratio = 4
-small_conv_arch = [(pair[0], pair[1] // ratio) for pair in conv_arch]
-net = vgg(small_conv_arch)
+net = nn.Sequential(
+    nin_block(1, 96, 11, 4, 0),
+    nn.MaxPool2d(3, 2),
+    nin_block(96, 256, 5, 1, 2),
+    nn.MaxPool2d(3, 2),
+    nin_block(256, 384, 3, 1, 1),
+    nn.MaxPool2d(3, 2),nn.Dropout(0.5),
+    nin_block(384, 10, 3, 1, 1),
+    nn.AdaptiveAvgPool2d((1, 1)),
+    nn.Flatten()
+)
 
 def train_ch6(net, train_iter, test_iter, num_epoch, lr, device, dry_run = False):
     '''train model with a GPU'''
@@ -89,7 +71,6 @@ def train_ch6(net, train_iter, test_iter, num_epoch, lr, device, dry_run = False
         test_acc = evaluate_accracy_gpu(net, test_iter, device)
         print(f'for epoch {epoch} the loss is {train_l}, train acc is {train_acc}, test_acc is {test_acc}')
 
-
 if __name__ == '__main__':
     lr, num_epochs, batch_size = 0.05, 1, 3
     train_iter, test_iter = load_data_fashion_mnist(batch_size=batch_size, resize=224)
@@ -99,4 +80,3 @@ if __name__ == '__main__':
     net.train()
 
     train_ch6(net, train_iter, test_iter, num_epochs, lr, device, True)
-
