@@ -46,23 +46,23 @@ class Residual(nn.Module):
         self.relu = nn.ReLU(inplace=True) #inplace 原地操作，节约内存
 
     def forward(self, X):
-        Y= F.relu(self.bn1(self.conv1(X)))
+        Y= self.relu(self.bn1(self.conv1(X)))
         Y = self.bn2(self.conv2(Y))
         if self.conv3:
             X= self.conv3(X)
         Y += X
-        return F.relu(Y)
+        return self.relu(Y)
 
 # 输入输出形状一致
 blk = Residual(3, 3)
 X = torch.rand(4, 3, 6, 6)
 Y = blk(X)
-print(Y.shape) # torch.Size([4, 3, 6, 6])
+# print(Y.shape) # torch.Size([4, 3, 6, 6])
 
 
 #增加输出通道数的同时，减半输出的H和W
 blk = Residual(3, 6, use_1x1conv=True, strides = 2)
-print(blk(X).shape) # torch.Size([4, 6, 3, 3])
+# print(blk(X).shape) # torch.Size([4, 6, 3, 3])
 '''
 为什么要通道数翻倍，HW减半：
 更大感受野：下采样（stride=2）让后续卷积看到更大的上下文。
@@ -79,7 +79,7 @@ b1 = nn.Sequential(nn.Conv2d(1,64,kernel_size=7,stride=2,padding=3),
 def resnet_block(input_channels,num_channels,num_residuals,first_block=False):
     blk = []
     for i in range(num_residuals):
-        if i == 0 and not first_block: # stage中不是第一个block则高宽减半
+        if i == 0 and not first_block: # 每个 stage 的第一个块（且 first_block=False 时）在减半。
             blk.append(Residual(input_channels, num_channels, use_1x1conv=True,strides=2))
         else:
             blk.append(Residual(num_channels, num_channels))
@@ -103,7 +103,7 @@ for layer in net:
 
 
 if __name__ == '__main__':
-    lr, num_epochs, batch_size = 0.05, 1, 3
+    lr, num_epochs, batch_size = 0.0005, 1, 64
     train_iter, test_iter = load_data_fashion_mnist(batch_size=batch_size)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
