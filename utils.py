@@ -98,7 +98,7 @@ def train_ch6(net, train_iter, test_iter, num_epoch, lr, device, dry_run = False
     num_batches = len(train_iter)
 
     if dry_run:
-        for i in range(3):
+        for i in range(4):
             net.train()
             X, y = next(iter(train_iter))
             X, y = X.to(device), y.to(device)
