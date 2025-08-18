@@ -1,6 +1,5 @@
 datasets/FashionMNIST/raw/*.csv
 datasets/FashionMNIST/raw/*.ubyte
-
 # data
 ch07/Fine_Tune/01_Data/
 *.tar.gz
