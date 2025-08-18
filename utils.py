@@ -1,9 +1,12 @@
 '''计算批量上的正确率'''
+import numpy as np
 import torch
 import torchvision
+from matplotlib import pyplot as plt
 from torchvision.transforms import transforms
 from torch.utils import data
 from torch import nn
+from PIL import Image
 
 
 
@@ -126,3 +129,40 @@ def train_ch6(net, train_iter, test_iter, num_epoch, lr, device, dry_run = False
         train_acc = metric[1] / metric[2]
         test_acc = evaluate_accracy_gpu(net, test_iter, device)
         print(f'for epoch {epoch} the loss is {train_l}, train acc is {train_acc}, test_acc is {test_acc}')
+
+
+def _to_numpy(img):
+    """支持 PIL.Image 或 torch.Tensor -> numpy(H, W, C)。"""
+    if isinstance(img, Image.Image):
+        arr = np.array(img)  # HWC, uint8
+        return arr
+    if isinstance(img, torch.Tensor):
+        # 形状 [C,H,W] 或 [H,W]; 放到 CPU，转 numpy
+        x = img.detach().cpu()
+        if x.ndim == 2:  # [H,W] 灰度
+            return x.numpy()
+        if x.ndim == 3:  # [C,H,W]
+            x = x.permute(1, 2, 0)
+        if x.dtype.is_floating_point:
+            x = x.clamp(0, 1)
+        return x.numpy()
+    raise TypeError(f"Unsupported image type: {type(img)}")
+
+def show_images(imgs, num_rows, num_cols, scale=1.5):
+    """用matplotlib以网格形式显示图片列表imgs。"""
+    figsize = (scale * num_cols, scale * num_rows)
+    fig, axes = plt.subplots(num_rows, num_cols, figsize=figsize)
+    axes = np.array(axes).reshape(num_rows, num_cols)
+    for ax, im in zip(axes.flat, imgs):
+        arr = _to_numpy(im)
+        # 灰度图用cmap='gray'
+        if arr.ndim == 2 or (arr.ndim == 3 and arr.shape[2] == 1):
+            ax.imshow(arr.squeeze(), cmap='gray')
+        else:
+            ax.imshow(arr)
+        ax.axis('off')
+    # 如果张数不足，隐藏多出来的子图
+    for ax in axes.flat[len(imgs):]:
+        ax.axis('off')
+    plt.tight_layout()
+    plt.show()
