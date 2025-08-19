@@ -4,3 +4,9 @@ datasets/FashionMNIST/raw/*.ubyte
 ch07/Fine_Tune/01_Data/
 *.tar.gz
 cifar-10-batches-py/
+# Stanford Dogs dataset (do not commit)
+ch08/ImageNet_Dogs/data/images/
+ch08/ImageNet_Dogs/data/annotations/
+# 可选：同时忽略压缩包
+ch08/ImageNet_Dogs/data/*.tar
+ch08/ImageNet_Dogs/data/*.tar.gz

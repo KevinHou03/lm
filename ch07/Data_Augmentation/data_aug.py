@@ -113,22 +113,6 @@ def train_batch_ch13(net, X, y, loss, trainer, devices):
     train_acc_sum = accuracy(pred, y)
     return train_loss_sum, train_acc_sum
 
-def train_ch13(net, train_iter, test_iter, loss, trainer, num_epochs, devices=try_all_gpus()):
-    if devices is None:
-        devices = try_all_gpus()
-    num_batches = len(train_iter)
-    # nn.DataParallel使用多GPU
-    net = nn.DataParallel(net, device_ids=devices).to(devices[0])
-    for epoch in range(num_epochs):
-        metric = Accumulator(4)
-        for i, (features, labels) in enumerate(train_iter):
-            l, acc = train_batch_ch13(net,features,labels,loss,trainer,devices)
-            metric.add(l,acc,labels.shape[0],labels.numel())
-        test_acc = evaluate_accracy_gpu(net,test_iter)
-        print(f'epoch {epoch + 1:02d} | '
-              f'loss {metric[0] / metric[2]:.3f}, '
-              f'train acc {metric[1] / metric[3]:.3f}, '
-              f'test acc {test_acc:.3f}')
 
 
 # 定义train_with_data_aug函数，使用图像增广来训练模型
