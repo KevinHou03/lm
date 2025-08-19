@@ -1,5 +1,7 @@
 import os
 import pandas as pd
+from matplotlib import pyplot as plt
+
 from LM.d2l import torch as d2lBoook, show_images, show_bboxes
 import torch, torchvision
 
@@ -47,6 +49,11 @@ def read_data_bananas(is_train=True):
     labels = torch.tensor(labels, dtype=torch.float32).unsqueeze(1)  # (N,1,5)
     return images, labels
 
+'''
+images：形状通常是[batch_size, 3, 256, 256]的张量(B×C×H×W，数值在 0~1）。
+labels：形状是 [batch_size, 1, 5]，每张图 1 个框，5 个数是 (class, xmin, ymin, xmax, ymax)（你已做 0~1 归一化）。
+'''
+
 
 class BananasDataset(torch.utils.data.Dataset):
     """一个用于加载香蕉检测数据集的自定义数据集"""
@@ -77,10 +84,11 @@ def load_data_bananas(batch_size: int):
 # 取一个小批量，并打印其中的图像和标签的形状
 batch_size, edge_size = 32, 256 # 香蕉数据集的图片本身就是 256×256。
 train_iter, val_iter = load_data_bananas(batch_size)
-batch = next(iter(train_iter))
+batch = next(iter(train_iter)) # 从 DataLoader 里取出第一批数据
 print(batch[0].shape, batch[1].shape)
 
-imgs = (batch[0][0:10]).permute(0, 2, 3, 1) / 255
+imgs = (batch[0][0:10]).permute(0, 2, 3, 1)
 axes = show_images(imgs, 2, 5, scale = 2)
 for ax, label in zip(axes, batch[1][0:10]):
     show_bboxes(ax, [label[0][1:5] * edge_size], colors = ['w'])
+plt.show()
