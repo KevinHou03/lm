@@ -1637,7 +1637,6 @@ def multibox_prior(data, sizes, ratios):
 
 def show_bboxes(axes, bboxes, labels=None, colors=None):
     """显示所有边界框
-
     Defined in :numref:`sec_anchor`"""
     def _make_list(obj, default_values=None):
         if obj is None:
