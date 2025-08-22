@@ -66,3 +66,35 @@ net.add_module('final_conv',nn.Conv2d(512,num_classes,kernel_size=1))
 # kernel_size是64，stride是32，这意味着这一层将特征图的宽度和高度放大了32倍
 # padding是16，它用于在特征图的边缘添加额外的区域，使得输出的大小正好是输入的32倍
 net.add_module('transpose_conv', nn.ConvTranspose2d(num_classes,num_classes,kernel_size=64,padding=16,stride=32))
+
+# 初始化转置卷积层
+
+# 双线性插值核的实现
+# 定义一个函数，用于初始化双线性插值核
+# 这个函数接受三个参数：输入通道数、输出通道数和核大小
+def bilinear_kernel(in_channels, out_channels, kernel_size):
+    # 计算双线性插值核中心点位置
+    # 计算双线性插值核的尺寸的一半，由于我们希望中心点位于核的中心，所以需要先计算核的一半大小
+    # 我们使用 // 运算符进行整数除法，确保结果为整数
+    factor = (kernel_size + 1) // 2
+    # 根据核的大小是奇数还是偶数，确定中心点的位置
+    # 如果核的大小是奇数，则中心点位于尺寸的一半减去1的位置，因为Python的索引从0开始，所以减去1
+    # 例如，如果核的大小是3，那么中心点应该位于1的位置，(3+1)//2 - 1 = 1
+    if kernel_size % 2 == 1:
+        center = factor - 1
+    # 如果核的大小是偶数，则中心点位于尺寸的一半减去0.5的位置
+    # 这是因为偶数大小的核没有明确的中心点，所以我们取中间两个元素的平均位置作为中心点
+    # 例如，如果核的大小是4，那么中心点应该位于1.5的位置，(4+1)//2 - 0.5 = 1.5
+    else:
+        center = factor - 0.5
+    # 创建一个矩阵，其元素的值等于其与中心点的距离
+    og = (torch.arange(kernel_size).reshape(-1,1),
+         torch.arange(kernel_size).reshape(1,-1))
+    # 计算双线性插值核，其值由中心点出发，向外线性衰减
+    filt = (1 - torch.abs(og[0] - center) / factor) * (1 - torch.abs(og[1] - center) / factor)
+    # 初始化一个权重矩阵，大小为 (输入通道数, 输出通道数, 核大小, 核大小)
+    weight = torch.zeros((in_channels, out_channels, kernel_size, kernel_size))
+    # 将双线性插值核的值赋给对应位置的权重
+    weight[range(in_channels),range(out_channels),:,:] = filt
+    # 返回初始化的权重矩阵，这个权重矩阵可以直接用于初始化转置卷积层的权重
+    return weight
