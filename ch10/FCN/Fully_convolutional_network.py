@@ -25,7 +25,7 @@ import torch
 import torchvision
 from torch import nn
 from torch.nn import functional as F
-from LM.d2l import torch as d2l
+from LM.d2l import torch as d2l, train_ch13
 
 # 使用在ImageNet数据集上预训练的ResNet18模型来提取图像特征
 pretrained_net = torchvision.models.resnet18(pretrained=True)
@@ -107,3 +107,117 @@ def bilinear_kernel(in_channels, out_channels, kernel_size):
     weight[range(in_channels),range(out_channels),:,:] = filt
     # 返回初始化的权重矩阵，这个权重矩阵可以直接用于初始化转置卷积层的权重
     return weight
+
+
+'''双线性插值的上采样实验'''
+# 创建一个转置卷积层，输入和输出通道数都是3，这是因为我们处理的是RGB图片，每个颜色通道都需要进行处理
+# 核大小是4，步长是2，这意味着这个层将输入的宽度和高度放大了2倍
+# 设置bias为False，因为我们不需要偏置项
+conv_trans = nn.ConvTranspose2d(3,3,kernel_size=4,padding=1,stride=2,bias=False)
+# 使用双线性插值核初始化转置卷积层的权重
+# 这里我们使用了copy_方法，这是一种就地操作，直接修改了原始张量的值
+conv_trans.weight.data.copy_(bilinear_kernel(3,3,4)) # 双线性核初始化权重
+# 使用torchvision.transforms.ToTensor()将一张JPEG格式的图片转换为张量
+img = torchvision.transforms.ToTensor()(d2l.Image.open('01_Data/03_catdog.jpg'))
+# 增加一个批次维度
+X = img.unsqueeze(0)
+# 将图片张量输入到转置卷积层中，得到上采样的结果
+Y = conv_trans(X)
+# 将输出结果转换为可以展示的格式，即(高度, 宽度, 颜色通道)的格式，并从计算图中分离出来，这样就可以转换为NumPy数组
+out_img = Y[0].permute(1,2,0).detach()
+# 设置展示图片的大小
+d2l.set_figsize()
+# 打印输入图片的形状
+print('input image shape:', img.permute(1,2,0).shape)
+# 展示图片
+d2l.plt.imshow(img.permute(1,2,0))
+# 打印输出图片的形状并展示图片
+# 可以看到，输出图片的宽度和高度都是输入的2倍，这正是我们设置的步长
+print('output image shape:',out_img.shape) # 输出被拉大了2倍
+# 并展示图片
+d2l.plt.imshow(out_img)
+
+# 用双线性插值的上采样初始化转置卷积层
+# 对于1X1卷积层，我们使用Xavier初始化参数
+# 使用双线性插值核初始化转置卷积层的权重
+# num_classes是目标数据集中的类别数量，这里使用双线性插值核的尺寸为64
+W = bilinear_kernel(num_classes, num_classes, 64)
+# 将初始化的权重W复制给转置卷积层的权重
+# 使用copy_方法进行就地操作，直接修改原始张量的值
+net.transpose_conv.weight.data.copy_(W)
+
+# 读取数据集
+# 设置批处理大小和图像裁剪大小
+# 批处理大小 (batch_size) 是一次训练迭代中同时处理的样本数量，这个参数影响模型训练的速度和效果
+# 裁剪大小 (crop_size) 是输入模型的图像尺寸，需要和模型的输入层尺寸匹配，不同的模型可能需要不同尺寸的输入
+batch_size, crop_size = 32, (320,480)
+# 使用 d2l.load_data_voc 函数读取VOC2012数据集
+# 此函数将会返回训练和测试的数据迭代器，数据迭代器可以按批次产生数据，方便训练模型
+# 在读取数据的过程中，图像会被裁剪到设定的尺寸，并且会进行一些常规的数据增强操作，如随机裁剪、随机翻转等
+train_iter, test_iter = d2l.load_data_voc(batch_size, crop_size)
+
+# 训练
+# 定义损失函数，这里使用交叉熵损失
+# inputs 是网络的预测输出，targets 是真实标签
+# 交叉熵损失会对每个像素的预测结果进行评估，然后计算平均损失
+# 使用reduction='none'选项禁止了损失的自动平均或求和，所以我们需要手动计算均值
+def loss(inputs, targets):
+    # 原先是对一个label做预测，算出一个值，现在是对图片里所有的label做预测，所有的像素都有值，loss为一个矩阵
+    # .mean(1).mean(1) 使得高做一下均值，对宽做一下均值，每个图片获得一个loss值
+    return F.cross_entropy(inputs, targets, reduction='none').mean(1).mean(1)
+
+# 设置训练参数：训练轮次(num_epochs)、学习率(lr)、权重衰减(wd)和设备(devices)
+# 这里使用了所有可用的GPU进行训练，如果没有可用的GPU，将使用CPU
+num_epochs, lr, wd, devices = 5, 0.001, 1e-3, d2l.try_all_gpus()
+# 初始化优化器，这里使用随机梯度下降（SGD）优化器
+# 优化器会更新模型的参数以最小化损失函数
+# 参数lr是学习率，权重衰减(wd)有助于防止模型过拟合
+trainer = torch.optim.SGD(net.parameters(), lr=lr, weight_decay=wd)
+# 调用d2l.train_ch13函数进行训练
+# 这个函数会在每个训练轮次中遍历训练数据，然后在测试数据上评估模型的性能
+# 损失函数和优化器用于指导模型的训练
+train_ch13(net, train_iter, test_iter, loss, trainer, num_epochs, devices)
+
+# 预测
+# 定义预测函数，输入参数img是待预测的图像
+def predict(img):
+    # 首先，对图像进行归一化处理，并添加一个批量维度，以匹配模型的输入需求
+    # normalize_image函数会对图像的每个像素进行归一化处理，使其值在0到1之间
+    # unsqueeze(0)是在第一个维度（批量维度）添加一个新的维度
+    X = test_iter.dataset.normalize_image(img).unsqueeze(0)
+    # 之后，将预处理后的图像输入到模型中进行预测
+    # 将图像数据移动到设备（如GPU）上
+    # 使用argmax(dim=1)找出预测结果中概率最大的类别，返回这个类别的索引
+    pred = net(X.to(devices[0])).argmax(dim=1) # 通道维度做argmax，因此得到每一个像素预测的标号
+    # 最后，将预测结果的形状改变成与原始图像相同的形状
+    # 通过reshape函数将预测结果的形状改为(高度,宽度)，这样每个像素都有一个对应的类别标签
+    return pred.reshape(pred.shape[1],pred.shape[2]) # 跟图片高宽等同的一个矩阵
+
+# 可视化预测的类别
+# 定义一个函数将预测的类别转换为图像
+def label2image(pred):
+    # 使用VOC_COLORMAP将类别转换为RGB颜色
+    # VOC_COLORMAP是一个列表，其中包含21种不同的RGB颜色，每种颜色对应一个物体类别
+    colormap = torch.tensor(d2l.VOC_COLORMAP, device=devices[0])# 把类别的RGB值做成一个tensor
+    # 将预测的结果转换为long型以对应颜色映射的索引
+    X = pred.long() # 把预测值做成一个index
+    # 根据类别索引找到对应的颜色
+    return colormap[X,:] # 把预测的RGB值画出来
+# 下载并解压VOC2012数据集
+voc_dir = d2l.download_extract('voc2012','VOCdevkit/VOC2012')
+# 读取VOC2012数据集的测试图像和标签
+test_images, test_labels = d2l.read_voc_images(voc_dir, False)
+# n设定为4，表示要处理4个图像。imgs：这是一个空的列表，它将被用来存储图像。
+n, imgs = 4, []
+# 循环预测4个测试样本并将预测结果转换为图像
+for i in range(n):
+    # 设置裁剪的区域
+    crop_rect = (0,0,320,480)
+    # 对图像进行裁剪
+    X = torchvision.transforms.functional.crop(test_images[i], *crop_rect)
+    # 预测裁剪后的图像，并将预测结果转换为图像
+    pred = label2image(predict(X)) # 预测转成图片
+    # 将原图，预测的图像和标签图像加入到imgs列表中
+    imgs += [X.permute(1,2,0), pred.cpu(), torchvision.transforms.functional.crop(test_labels[i],*crop_rect).permute(1,2,0)]
+# 显示原图、预测的图像和标签图像
+d2l.show_images(imgs[::3] + imgs[1::3] + imgs[2::3],3,n,scale=2) # 第二行为预测，第三行为真实标号
