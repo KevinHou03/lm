@@ -197,6 +197,7 @@ def show_images(imgs, num_rows, num_cols, titles=None, scale=1.5):
         ax.axes.get_yaxis().set_visible(False)
         if titles:
             ax.set_title(titles[i])
+    plt.show()
     return axes
 
 def get_dataloader_workers():
