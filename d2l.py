@@ -76,9 +76,10 @@ def set_axes(axes, xlabel, ylabel, xlim, ylim, xscale, yscale, legend):
 def plot(X, Y=None, xlabel=None, ylabel=None, legend=None, xlim=None,
          ylim=None, xscale='linear', yscale='linear',
          fmts=('-', 'm--', 'g-.', 'r:'), figsize=(3.5, 2.5), axes=None):
-    """绘制数据点
-
-    Defined in :numref:`sec_calculus`"""
+    """
+    绘制数据点
+    Defined in :numref:`sec_calculus
+    """
     if legend is None:
         legend = []
 
@@ -2663,3 +2664,36 @@ argmax = lambda x, *args, **kwargs: x.argmax(*args, **kwargs)
 astype = lambda x, *args, **kwargs: x.type(*args, **kwargs)
 transpose = lambda x, *args, **kwargs: x.t(*args, **kwargs)
 reduce_mean = lambda x, *args, **kwargs: x.mean(*args, **kwargs)
+
+
+# additional
+
+def plot2(X, Y=None, xlabel=None, ylabel=None, legend=None, xlim=None,
+         ylim=None, xscale='linear', yscale='linear',
+         fmts=('-', 'm--', 'g-.', 'r:'), figsize=(3.5, 2.5), axes=None):
+    """绘制数据点"""
+    if legend is None:
+        legend = []
+
+    set_figsize(figsize)
+    axes = axes if axes else plt.gca()
+
+    if isinstance(X, torch.Tensor):
+        X = X.numpy()
+    if Y is None:
+        axes.plot(X, fmts[0])
+    elif isinstance(Y, torch.Tensor):
+        Y = Y.numpy()
+        axes.plot(X, Y, fmts[0])
+
+    axes.set_xlabel(xlabel)
+    axes.set_ylabel(ylabel)
+    axes.set_xscale(xscale)
+    axes.set_yscale(yscale)
+    if legend:
+        axes.legend(legend)
+    if xlim:
+        axes.set_xlim(xlim)
+    if ylim:
+        axes.set_ylim(ylim)
+    plt.show()   # 👈 关键点：显示图像
