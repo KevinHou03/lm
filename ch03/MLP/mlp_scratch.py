@@ -7,7 +7,7 @@ from LM.ch02.Softmax.softmax_scratch import train_ch3
 num_inputs, num_outputs, num_hidden = 784, 10, 256
 '''
 这里的num-hidden是表示隐藏层中一共有256个神经元，每个神经元会需要一个b-weight
-requires_grad 为 True 表示 该张量是可训练的参数，会被 PyTorch 的 autograd 自动记录
+requires_grad 为 True 表示 该张量是可训练的参数，会被 PyTorch_TuDui 的 autograd 自动记录
 '''
 W1 = nn.Parameter(torch.randn(num_inputs, num_hidden, requires_grad=True)) # 模型的可学习参数
 b1 = nn.Parameter(torch.zeros(num_hidden, requires_grad=True))

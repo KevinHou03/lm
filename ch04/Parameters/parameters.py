@@ -8,7 +8,7 @@ print(net(X))
 
 print('1.访问第二个全连接层的参数')
 print(net[2].state_dict())  # 当通过Sequential类定义模型时，我们可以通过索引来访问模型的任意层
-'''state_dict() 是 PyTorch 中 获取模型所有可学习参数（权重、偏置等）和持久化缓冲区（如 BN 的 running_mean、running_var） 的方法'''
+'''state_dict() 是 PyTorch_TuDui 中 获取模型所有可学习参数（权重、偏置等）和持久化缓冲区（如 BN 的 running_mean、running_var） 的方法'''
 print(net[2].bias)  # 第二个神经网络层提取偏置
 print(net[2].bias.data)  # 第二个神经网络层提取偏置的实际值
 print(net[2].weight.grad is None)  # 由于我们还没有调用这个网络的反向传播，所以参数的梯度处于初始状态。
@@ -81,7 +81,7 @@ print('5.参数自定义初始化')
 net.apply(my_init)
 print(net[0].weight[:2])
 
-# 6.多个层间共享参数：在 PyTorch 中实现多个层之间共享参数
+# 6.多个层间共享参数：在 PyTorch_TuDui 中实现多个层之间共享参数
 # 我们需要给共享层一个名称，以便可以引用它的参数。
 shared = nn.Linear(8, 8)
 net = nn.Sequential(nn.Linear(4, 8),
