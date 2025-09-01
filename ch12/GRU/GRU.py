@@ -88,7 +88,7 @@ def gru(inputs, state, params):
 if __name__ == '__main__':
     vocab_size, num_hiddens, device = len(vocab), 256, try_gpu()
     num_epochs, lr = 500, 1
-    # #创建gru instance
+    # #创建gru实例
     # model = RNNModelScratch(len(vocab), num_hiddens, device, get_params,
     #                            init_gru_state, gru)
     # train_ch8(model, train_iter, vocab, lr, num_epochs, device)
