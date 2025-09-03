@@ -6,11 +6,11 @@ LSTM有三个门：
     输入门：决定是不是忽略输入值 It
     输出门：决定是不是使用隐状态 Ot
 具体公式：
-输入门:   i_t = σ(W_i x_t + U_i h_{t-1} + b_i)
-遗忘门:   f_t = σ(W_f x_t + U_f h_{t-1} + b_f)
+输入门:   i_t = σ(W_i x_t + U_i h_{t-1} + b_i) 写入多少新信息
+遗忘门:   f_t = σ(W_f x_t + U_f h_{t-1} + b_f) 保留多少旧记忆
 输出门:   o_t = σ(W_o x_t + U_o h_{t-1} + b_o)
-候选细胞: c_tilde = tanh(W_c x_t + U_c h_{t-1} + b_c)
-细胞更新: c_t = f_t ⊙ c_{t-1} + i_t ⊙ c_tilde
+候选细胞: c_tilde = tanh(W_c x_t + U_c h_{t-1} + b_c) 候选“新内容
+细胞更新: c_t = f_t ⊙ c_{t-1} + i_t ⊙ c_tilde 更新细胞状态 -> 保留多少旧记忆*旧记忆 + 更新多少新信息*新信息
 隐状态:   h_t = o_t ⊙ tanh(c_t)
 - i_t, f_t, o_t ∈ [0, 1]（门向量）
 
