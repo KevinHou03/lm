@@ -8,6 +8,9 @@
     RNN中的输入是现在的输入Xt和上一个时间步的隐藏状态Ht-1
     重置门Rt ：算“新内容”之前，先决定要不要参考过去。
     更新门Zt ：算完“新内容”之后，决定写多少新、留多少旧。
+
+补充：
+什么叫候选状态： 含义：根据当前输入Xt和（经重置门rt过滤后的）旧隐状态ht-1生成的新信息提案。
 '''
 
 
@@ -18,7 +21,7 @@ from LM.d2l import load_data_time_machine, RNNModelScratch, train_ch8, try_gpu, 
 batch_size, num_steps = 32, 35
 train_iter, vocab = load_data_time_machine(batch_size, num_steps)
 
-# 初始化模型参数
+#初始化模型参数
 def get_params(vocab_size, num_hiddens, device):
     num_inputs = num_outputs = vocab_size
     # 定义一个函数，用于生成服从正态分布的随机张量，并乘以0.01进行缩放

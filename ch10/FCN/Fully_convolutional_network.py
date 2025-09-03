@@ -173,13 +173,11 @@ num_epochs, lr, wd, devices = 5, 0.001, 1e-3, d2l.try_all_gpus()
 # 优化器会更新模型的参数以最小化损失函数
 # 参数lr是学习率，权重衰减(wd)有助于防止模型过拟合
 trainer = torch.optim.SGD(net.parameters(), lr=lr, weight_decay=wd)
-# 调用d2l.train_ch13函数进行训练
-# 这个函数会在每个训练轮次中遍历训练数据，然后在测试数据上评估模型的性能
-# 损失函数和优化器用于指导模型的训练
+#这个函数会在每个训练轮次中遍历训练数据，然后在测试数据上评估模型的性能
+#损失函数和优化器用于指导模型的训练
 train_ch13(net, train_iter, test_iter, loss, trainer, num_epochs, devices)
 
-# 预测
-# 定义预测函数，输入参数img是待预测的图像
+#定义预测函数，输入参数img是待预测的图像
 def predict(img):
     # 首先，对图像进行归一化处理，并添加一个批量维度，以匹配模型的输入需求
     # normalize_image函数会对图像的每个像素进行归一化处理，使其值在0到1之间
