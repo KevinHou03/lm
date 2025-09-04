@@ -71,13 +71,13 @@ def evaluate_accracy_gpu(net, data_iter, device=None):
         if device is None:
             device = next(net.parameters()).device
 
-    metric = Accumulator(2)  # 正确数, 总数
+    metric = Accumulator(2)  #正确数, 总数
     with torch.no_grad():
         for X, y in data_iter:
-            if isinstance(X, (list, tuple)):     # 只有多输入才按元素搬设备
+            if isinstance(X, (list, tuple)):
                 X = [x.to(device) for x in X]
                 y_hat = net(*X)
-            else:                                 # 常见：单输入张量
+            else:
                 X = X.to(device)
                 y_hat = net(X)
             y = y.to(device)
