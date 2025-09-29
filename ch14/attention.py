@@ -191,7 +191,7 @@ class DotProductAttention(nn.Module):
         scores = torch.bmm(queries, keys.transpose(1, 2)) / math.sqrt(d)
         # 使用遮蔽softmax计算注意力权重
         self.attention_weights = masked_softmax(scores, valid_lens)
-        # 根据注意力权重对values进行加权求和，这一步叫注意力池化，就是权重和value相乘
+        # 根据注意力权重对values进行加权求和，这一步叫注意力池化，就是权重和value相 cheng
         return torch.bmm(self.dropout(self.attention_weights), values)
 
 #showcase
