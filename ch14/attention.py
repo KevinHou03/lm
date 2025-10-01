@@ -199,5 +199,5 @@ queries = torch.normal(0,1,(2,1,2))
 # 创建缩放点积注意力对象
 attention = DotProductAttention(dropout=0.5)
 attention.eval()
-# 调用缩放点积注意力对象的forward方法
+# 调用缩放点积注意力对象的forward方 法
 attention(queries, keys, values, valid_lens)
