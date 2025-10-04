@@ -179,7 +179,7 @@ encoder = Seq2SeqEncoder(len(src_vocab), embed_size, num_hiddens, num_layers, dr
 decoder = Seq2SeqAttentionDecoder(len(tgt_vocab), embed_size, num_hiddens, num_layers, dropout)
 # 创建编码-解码模型实例
 net = EncoderDecoder(encoder, decoder)
-# 训练序列到序列模型
+# 训练序列到序列模
 train_seq2seq(net, train_iter, lr, num_epochs, tgt_vocab, device)
 
 
