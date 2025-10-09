@@ -168,7 +168,7 @@ def load_data_nmt(batch_size, num_steps, num_examples=600):
 embed_size, num_hiddens, num_layers, dropout = 32, 32, 2, 0.1
 # 批量大小和序列长度
 batch_size, num_steps = 64, 10
-# 设置学习率、训练轮数和设备（GPU或CPU）
+# 学习率、训练轮数和设备（GPU或CPU）
 lr, num_epochs, device = 0.005, 250, try_gpu()
 
 # 载入翻译数据集，并获取数据迭代器和词汇biao
