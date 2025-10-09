@@ -164,7 +164,7 @@ def load_data_nmt(batch_size, num_steps, num_examples=600):
     # 返回数据迭代器和词汇表对象
     return data_iter, src_vocab, tgt_vocab
 
-# train
+# Train
 embed_size, num_hiddens, num_layers, dropout = 32, 32, 2, 0.1
 # 设置批量大小和序列长度
 batch_size, num_steps = 64, 10
