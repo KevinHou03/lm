@@ -171,7 +171,7 @@ batch_size, num_steps = 64, 10
 # 学习率、训练轮数和设备（GPU或CPU）
 lr, num_epochs, device = 0.005, 250, try_gpu()
 
-# 载入翻译数据集，并获取数据迭代器和词汇biao
+# 载入翻译数据集，并获取数据迭代器和词汇bia
 train_iter, src_vocab, tgt_vocab = load_data_nmt(batch_size, num_steps)
 # 创建源语言的编码器实例
 encoder = Seq2SeqEncoder(len(src_vocab), embed_size, num_hiddens, num_layers, dropout)
