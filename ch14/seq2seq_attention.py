@@ -162,7 +162,7 @@ def load_data_nmt(batch_size, num_steps, num_examples=600):
     # 构建数据迭代器
     data_iter = load_array(data_arrays, batch_size)
     # 返回数据迭代器和词汇表对象
-    return data_iter, src_vocab, tgt_vocab #
+    return data_iter, src_vocab, tgt_vocab
 
 # train
 embed_size, num_hiddens, num_layers, dropout = 32, 32, 2, 0.1
@@ -171,7 +171,7 @@ batch_size, num_steps = 64, 10
 # 学习率、训练轮数和设备（GPU或CPU）
 lr, num_epochs, device = 0.005, 250, try_gpu()
 
-# 载入翻译数据集，并获取数据迭代器和词汇bia
+# 载入翻译数据集，并获取数据迭代器和词汇表
 train_iter, src_vocab, tgt_vocab = load_data_nmt(batch_size, num_steps)
 # 创建源语言的编码器实例
 encoder = Seq2SeqEncoder(len(src_vocab), embed_size, num_hiddens, num_layers, dropout)
